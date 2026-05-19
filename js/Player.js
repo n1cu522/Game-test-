@@ -53,23 +53,29 @@ export class Player {
     }
 
     draw(ctx, screenX, screenY) {
-        ctx.beginPath();
-        ctx.arc(screenX, screenY, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = '#3498db';
-        ctx.fill();
-        ctx.strokeStyle = '#2980b9';
-        ctx.lineWidth = 3;
-        ctx.stroke();
+        ctx.fillStyle = '#2980b9';
+        ctx.fillRect(screenX - 8, screenY + 4, 6, 12);
+        ctx.fillRect(screenX + 2, screenY + 4, 6, 12);
 
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = '#e67e22';
+        ctx.fillRect(screenX - 12, screenY - 6, 24, 12);
+
+        ctx.fillStyle = '#3498db';
+        ctx.fillRect(screenX - 10, screenY - 4, 20, 10);
+
+        ctx.fillStyle = '#ffdbac';
         ctx.beginPath();
-        ctx.arc(screenX + 5, screenY - 5, 4, 0, Math.PI * 2);
-        ctx.arc(screenX + 5, screenY + 5, 4, 0, Math.PI * 2);
+        ctx.arc(screenX, screenY - 10, 8, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = '#000000';
-        ctx.beginPath();
-        ctx.arc(screenX + 7, screenY - 5, 1.5, 0, Math.PI * 2);
-        ctx.arc(screenX + 7, screenY + 5, 1.5, 0, Math.PI * 2);
-        ctx.fill();
+
+        ctx.fillStyle = '#2c3e50';
+        ctx.fillRect(screenX - 8, screenY - 16, 16, 6);
+
+        ctx.fillStyle = '#111111';
+        ctx.fillRect(screenX + 2, screenY - 12, 2, 2);
+        ctx.fillRect(screenX + 5, screenY - 12, 2, 2);
+
+        ctx.fillStyle = '#e74c3c';
+        ctx.fillRect(screenX + 2, screenY - 8, 4, 1.5);
     }
 }

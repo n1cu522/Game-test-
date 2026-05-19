@@ -10,19 +10,25 @@ export class Enemy {
             this.speed = 2.3;
             this.hp = 20;
             this.damage = 15;
-            this.color = '#c0392b';
+            this.bodyColor = '#962d22';
+            this.skinColor = '#d5a6bd';
+            this.clothesColor = '#4a154b';
         } else if (this.type === 2) {
             this.radius = 25;
             this.speed = 0.8;
             this.hp = 80;
             this.damage = 35;
-            this.color = '#8e44ad';
+            this.bodyColor = '#4d058a';
+            this.skinColor = '#a881af';
+            this.clothesColor = '#1a0933';
         } else {
             this.radius = 16;
             this.speed = 1.3;
             this.hp = 35;
             this.damage = 10;
-            this.color = '#27ae60';
+            this.bodyColor = '#27ae60';
+            this.skinColor = '#a2d1a0';
+            this.clothesColor = '#7f8c8d';
         }
     }
 
@@ -46,23 +52,30 @@ export class Enemy {
         const screenX = canvasW / 2 + (this.x - cameraX);
         const screenY = canvasH / 2 + (this.y - cameraY);
 
-        if (screenX < -40 || screenX > canvasW + 40 || screenY < -40 || screenY > canvasH + 40) return;
+        if (screenX < -50 || screenX > canvasW + 50 || screenY < -50 || screenY > canvasH + 50) return;
+
+        let scale = this.radius / 16;
+
+        ctx.fillStyle = this.clothesColor;
+        ctx.fillRect(screenX - 6 * scale, screenY + 4 * scale, 4 * scale, 10 * scale);
+        ctx.fillRect(screenX + 2 * scale, screenY + 4 * scale, 4 * scale, 10 * scale);
+
+        ctx.fillStyle = this.bodyColor;
+        ctx.fillRect(screenX - 10 * scale, screenY - 5 * scale, 20 * scale, 10 * scale);
+
+        ctx.fillStyle = this.skinColor;
+        ctx.fillRect(screenX - 14 * scale, screenY - 3 * scale, 4 * scale, 4 * scale);
+        ctx.fillRect(screenX + 10 * scale, screenY - 3 * scale, 4 * scale, 4 * scale);
 
         ctx.beginPath();
-        ctx.arc(screenX, screenY, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = this.color;
+        ctx.arc(screenX, screenY - 10 * scale, 7 * scale, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = '#1a1a1a';
-        ctx.lineWidth = 2;
-        ctx.stroke();
 
-        ctx.fillStyle = this.color;
-        if (this.type === 1) {
-            ctx.fillRect(screenX - 4, screenY - this.radius - 2, 4, 6);
-            ctx.fillRect(screenX - 4, screenY + this.radius - 4, 4, 6);
-        } else {
-            ctx.fillRect(screenX + this.radius - 3, screenY - 7, 10, 4);
-            ctx.fillRect(screenX + this.radius - 3, screenY + 3, 10, 4);
-        }
+        ctx.fillStyle = '#ff0000';
+        ctx.fillRect(screenX - 4 * scale, screenY - 12 * scale, 2 * scale, 2 * scale);
+        ctx.fillRect(screenX + 2 * scale, screenY - 12 * scale, 2 * scale, 2 * scale);
+
+        ctx.fillStyle = '#222222';
+        ctx.fillRect(screenX - 3 * scale, screenY - 7 * scale, 6 * scale, 2 * scale);
     }
 }

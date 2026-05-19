@@ -47,6 +47,8 @@ export class Engine {
         this.canvas.addEventListener('touchmove', (e) => this.handleTouchMove(e), { passive: false });
         this.canvas.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: false });
 
+        this.canvas.addEventListener('mousedown', (e) => this.handleMouseClick(e));
+
         window.addEventListener('resize', () => this.resizeCanvas());
         this.resizeCanvas();
     }
@@ -77,6 +79,17 @@ export class Engine {
         this.joystick.currentY = touch.clientY;
     }
 
+    handleMouseClick(e) {
+        if (this.isGameOver) {
+            this.restart();
+            return;
+        }
+
+        if (this.isLevelUpSelection) {
+            this.handleUpgradeSelection(e.clientX, e.clientY);
+        }
+    }
+
     handleTouchMove(e) {
         if (!this.joystick.isActive) return;
         e.preventDefault();
@@ -105,7 +118,7 @@ export class Engine {
         this.joystick.vector = { x: 0, y: 0 };
     }
 
-    handleUpgradeSelection(touchX, touchY) {
+    handleUpgradeSelection(clickX, clickY) {
         const itemW = 260;
         const itemH = 70;
         const startX = this.canvas.width / 2 - itemW / 2;
@@ -113,7 +126,7 @@ export class Engine {
 
         for (let i = 0; i < this.levelUpOptions.length; i++) {
             const currentY = startY + i * (itemH + 15);
-            if (touchX >= startX && touchX <= startX + itemW && touchY >= currentY && touchY <= currentY + itemH) {
+            if (clickX >= startX && clickX <= startX + itemW && clickY >= currentY && clickY <= currentY + itemH) {
                 this.applyUpgrade(this.levelUpOptions[i]);
                 break;
             }
@@ -356,10 +369,10 @@ export class Engine {
             this.ctx.save();
             this.ctx.translate(pScreenX, pScreenY);
             this.ctx.rotate(angle);
-            this.ctx.fillStyle = '#2c3e50';
-            this.ctx.fillRect(14, -5, 18, 10);
-            this.ctx.fillStyle = '#000000';
-            this.ctx.fillRect(32, -3, 3, 6);
+            this.ctx.fillStyle = '#111111';
+            this.ctx.fillRect(10, -3, 16, 6);
+            this.ctx.fillStyle = '#7f8c8d';
+            this.ctx.fillRect(26, -2, 4, 4);
             this.ctx.restore();
         }
 
