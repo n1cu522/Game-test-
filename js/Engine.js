@@ -202,7 +202,7 @@ export class Engine {
             for (let enemy of this.enemies) {
                 if (getDistance(this.player.x, this.player.y, enemy.x, enemy.y) <= ffield.radius) {
                     enemy.takeDamage(ffield.damage);
-                    for (let i = 0; i < 4; i++) {
+                    for (let k = 0; k < 4; k++) {
                         this.particles.push(new Particle(enemy.x, enemy.y, '#3498db'));
                     }
                 }
@@ -229,12 +229,12 @@ export class Engine {
 
             let rand = Math.random();
             let type = 0;
-            if (this.scoreTime > 20 && rand < 0.25) type = 1;
-            if (this.scoreTime > 45 && rand > 0.80) type = 2;
+            if (this.scoreTime > 15 && rand < 0.30) type = 1;
+            if (this.scoreTime > 35 && rand > 0.75) type = 2;
 
             this.enemies.push(new Enemy(spawnX, spawnY, type));
             this.lastSpawnTime = currentTime;
-            this.spawnInterval = Math.max(300, 1000 - Math.floor(this.scoreTime / 10) * 80);
+            this.spawnInterval = Math.max(250, 1000 - Math.floor(this.scoreTime / 8) * 90);
         }
 
         for (let i = this.projectiles.length - 1; i >= 0; i--) {
@@ -250,8 +250,9 @@ export class Engine {
                 if (checkCollision(p, enemy)) {
                     enemy.takeDamage(p.damage);
                     p.isDead = true;
-                    for (let k = 0; i < 6; i++) {
-                        this.particles.push(new Particle(enemy.x, enemy.y, '#27ae60'));
+                    
+                    for (let k = 0; k < 6; k++) {
+                        this.particles.push(new Particle(enemy.x, enemy.y, '#2ecc71'));
                     }
                     break;
                 }
@@ -296,13 +297,13 @@ export class Engine {
     }
 
     render() {
-        this.ctx.fillStyle = '#1c1c1c';
+        this.ctx.fillStyle = '#181818';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         const cameraX = this.player.x;
         const cameraY = this.player.y;
 
-        this.ctx.strokeStyle = '#282828';
+        this.ctx.strokeStyle = '#222222';
         this.ctx.lineWidth = 1;
         const gridSize = 80;
         const startGridX = Math.floor((cameraX - this.canvas.width / 2) / gridSize) * gridSize;
@@ -328,7 +329,20 @@ export class Engine {
         for (let p of this.projectiles) p.draw(this.ctx, cameraX, cameraY, this.canvas.width, this.canvas.height);
         for (let part of this.particles) part.draw(this.ctx, cameraX, cameraY, this.canvas.width, this.canvas.height);
 
-        this.player.draw(this.ctx, this.canvas.width / 2, this.canvas.height / 2);
+        const pScreenX = this.canvas.width / 2;
+        const pScreenY = this.canvas.height / 2;
+        this.player.draw(this.ctx, pScreenX, pScreenY);
+
+        const closest = this.findClosestEnemy();
+        if (closest) {
+            const angle = Math.atan2(closest.y - this.player.y, closest.x - this.player.x);
+            this.ctx.save();
+            this.ctx.translate(pScreenX, pScreenY);
+            this.ctx.rotate(angle);
+            this.ctx.fillStyle = '#111111';
+            this.ctx.fillRect(5, -3, 18, 6);
+            this.ctx.restore();
+        }
 
         if (this.joystick.isActive) this.drawJoystick();
 
@@ -341,13 +355,13 @@ export class Engine {
     drawJoystick() {
         this.ctx.beginPath();
         this.ctx.arc(this.joystick.startX, this.joystick.startY, this.joystick.maxRadius, 0, Math.PI * 2);
-        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
         this.ctx.lineWidth = 3;
         this.ctx.stroke();
 
         this.ctx.beginPath();
-        this.ctx.arc(this.joystick.currentX, this.joystick.currentY, 18, 0, Math.PI * 2);
-        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+        this.ctx.arc(this.joystick.currentX, this.joystick.currentY, 16, 0, Math.PI * 2);
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
         this.ctx.fill();
     }
 
@@ -359,6 +373,7 @@ export class Engine {
 
         this.ctx.fillStyle = '#ffffff';
         this.ctx.font = 'bold 11px sans-serif';
+        this.ctx.textAlign = 'left';
         this.ctx.fillText(`LVL ${this.player.level}`, 15, 21);
 
         const hpBarW = 140;
@@ -378,7 +393,7 @@ export class Engine {
     }
 
     drawLevelUpMenu() {
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.ctx.fillStyle = '#2ecc71';
