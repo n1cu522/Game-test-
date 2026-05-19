@@ -202,8 +202,10 @@ export class Engine {
             for (let enemy of this.enemies) {
                 if (getDistance(this.player.x, this.player.y, enemy.x, enemy.y) <= ffield.radius) {
                     enemy.takeDamage(ffield.damage);
-                    for (let k = 0; k < 4; k++) {
-                        this.particles.push(new Particle(enemy.x, enemy.y, '#3498db'));
+                    if (this.particles.length < 150) {
+                        for (let k = 0; k < 3; k++) {
+                            this.particles.push(new Particle(enemy.x, enemy.y, '#3498db'));
+                        }
                     }
                 }
             }
@@ -218,7 +220,6 @@ export class Engine {
         this.scoreTime = Math.floor((currentTime - this.startTime) / 1000);
 
         this.player.update(this.keys, this.joystick.isActive ? this.joystick.vector : null);
-
         this.fireWeapons(currentTime);
 
         if (currentTime - this.lastSpawnTime > this.spawnInterval) {
@@ -229,12 +230,12 @@ export class Engine {
 
             let rand = Math.random();
             let type = 0;
-            if (this.scoreTime > 15 && rand < 0.30) type = 1;
-            if (this.scoreTime > 35 && rand > 0.75) type = 2;
+            if (this.scoreTime > 15 && rand < 0.35) type = 1;
+            if (this.scoreTime > 40 && rand > 0.70) type = 2;
 
             this.enemies.push(new Enemy(spawnX, spawnY, type));
             this.lastSpawnTime = currentTime;
-            this.spawnInterval = Math.max(250, 1000 - Math.floor(this.scoreTime / 8) * 90);
+            this.spawnInterval = Math.max(200, 1000 - Math.floor(this.scoreTime / 6) * 100);
         }
 
         for (let i = this.projectiles.length - 1; i >= 0; i--) {
@@ -251,8 +252,10 @@ export class Engine {
                     enemy.takeDamage(p.damage);
                     p.isDead = true;
                     
-                    for (let k = 0; k < 6; k++) {
-                        this.particles.push(new Particle(enemy.x, enemy.y, '#2ecc71'));
+                    if (this.particles.length < 150) {
+                        for (let k = 0; k < 5; k++) {
+                            this.particles.push(new Particle(enemy.x, enemy.y, '#2ecc71'));
+                        }
                     }
                     break;
                 }
@@ -267,9 +270,7 @@ export class Engine {
 
             if (checkCollision(this.player, enemy)) {
                 this.player.hp -= enemy.damage / 60;
-                if (this.player.hp <= 0) {
-                    this.isGameOver = true;
-                }
+                if (this.player.hp <= 0) this.isGameOver = true;
             }
 
             if (enemy.isDead) {
@@ -283,9 +284,7 @@ export class Engine {
             if (checkCollision(this.player, gem)) {
                 const leveledUp = this.player.gainXp(gem.value);
                 gem.isDead = true;
-                if (leveledUp) {
-                    this.triggerLevelUp();
-                }
+                if (leveledUp) this.triggerLevelUp();
             }
             if (gem.isDead) this.gems.splice(i, 1);
         }
@@ -297,18 +296,18 @@ export class Engine {
     }
 
     render() {
-        this.ctx.fillStyle = '#181818';
+        this.ctx.fillStyle = '#cfd6de';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         const cameraX = this.player.x;
         const cameraY = this.player.y;
 
-        this.ctx.strokeStyle = '#222222';
-        this.ctx.lineWidth = 1;
-        const gridSize = 80;
+        const gridSize = 64;
         const startGridX = Math.floor((cameraX - this.canvas.width / 2) / gridSize) * gridSize;
         const startGridY = Math.floor((cameraY - this.canvas.height / 2) / gridSize) * gridSize;
 
+        this.ctx.strokeStyle = '#bdc3c7';
+        this.ctx.lineWidth = 1;
         for (let x = startGridX; x < cameraX + this.canvas.width / 2 + gridSize; x += gridSize) {
             const sX = this.canvas.width / 2 + (x - cameraX);
             this.ctx.beginPath();
@@ -322,6 +321,24 @@ export class Engine {
             this.ctx.moveTo(0, sY);
             this.ctx.lineTo(this.canvas.width, sY);
             this.ctx.stroke();
+        }
+
+        const roadW = 340;
+        const roadScreenX = this.canvas.width / 2 + (0 - cameraX) - roadW / 2;
+        if (roadScreenX + roadW > 0 && roadScreenX < this.canvas.width) {
+            this.ctx.fillStyle = '#7f8c8d'; 
+            this.ctx.fillRect(roadScreenX, 0, roadW, this.canvas.height);
+            
+            this.ctx.strokeStyle = '#f1c40f';
+            this.ctx.lineWidth = 4;
+            this.ctx.setLineDash([25, 15]);
+            this.ctx.beginPath();
+            this.ctx.moveTo(roadScreenX + roadW / 2 - 4, 0);
+            this.ctx.lineTo(roadScreenX + roadW / 2 - 4, this.canvas.height);
+            this.ctx.moveTo(roadScreenX + roadW / 2 + 4, 0);
+            this.ctx.lineTo(roadScreenX + roadW / 2 + 4, this.canvas.height);
+            this.ctx.stroke();
+            this.ctx.setLineDash([]);
         }
 
         for (let gem of this.gems) gem.draw(this.ctx, cameraX, cameraY, this.canvas.width, this.canvas.height);
@@ -339,13 +356,14 @@ export class Engine {
             this.ctx.save();
             this.ctx.translate(pScreenX, pScreenY);
             this.ctx.rotate(angle);
-            this.ctx.fillStyle = '#111111';
-            this.ctx.fillRect(5, -3, 18, 6);
+            this.ctx.fillStyle = '#2c3e50';
+            this.ctx.fillRect(14, -5, 18, 10);
+            this.ctx.fillStyle = '#000000';
+            this.ctx.fillRect(32, -3, 3, 6);
             this.ctx.restore();
         }
 
         if (this.joystick.isActive) this.drawJoystick();
-
         this.drawUI();
 
         if (this.isLevelUpSelection) this.drawLevelUpMenu();
@@ -355,18 +373,18 @@ export class Engine {
     drawJoystick() {
         this.ctx.beginPath();
         this.ctx.arc(this.joystick.startX, this.joystick.startY, this.joystick.maxRadius, 0, Math.PI * 2);
-        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
         this.ctx.lineWidth = 3;
         this.ctx.stroke();
 
         this.ctx.beginPath();
         this.ctx.arc(this.joystick.currentX, this.joystick.currentY, 16, 0, Math.PI * 2);
-        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
         this.ctx.fill();
     }
 
     drawUI() {
-        this.ctx.fillStyle = '#2c3e50';
+        this.ctx.fillStyle = '#34495e';
         this.ctx.fillRect(10, 10, this.canvas.width - 20, 14);
         this.ctx.fillStyle = '#2ecc71';
         this.ctx.fillRect(10, 10, (this.canvas.width - 20) * (this.player.xp / this.player.nextLevelXp), 14);
@@ -374,7 +392,7 @@ export class Engine {
         this.ctx.fillStyle = '#ffffff';
         this.ctx.font = 'bold 11px sans-serif';
         this.ctx.textAlign = 'left';
-        this.ctx.fillText(`LVL ${this.player.level}`, 15, 21);
+        this.ctx.fillText(`LVL ${this.player.level}`, 16, 21);
 
         const hpBarW = 140;
         const hpX = this.canvas.width / 2 - hpBarW / 2;
@@ -384,9 +402,8 @@ export class Engine {
         this.ctx.fillRect(hpX, 35, hpBarW * (Math.max(0, this.player.hp) / this.player.maxHp), 8);
 
         this.ctx.fillStyle = '#ffffff';
-        this.ctx.font = '20px sans-serif';
+        this.ctx.font = 'bold 20px sans-serif';
         this.ctx.textAlign = 'center';
-        
         const min = Math.floor(this.scoreTime / 60);
         const sec = this.scoreTime % 60;
         this.ctx.fillText(`${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`, this.canvas.width / 2, 65);
@@ -408,7 +425,6 @@ export class Engine {
 
         this.levelUpOptions.forEach((option, i) => {
             const currentY = startY + i * (itemH + 15);
-            
             this.ctx.fillStyle = '#2c3e50';
             this.ctx.fillRect(startX, currentY, itemW, itemH);
             this.ctx.strokeStyle = '#34495e';
@@ -419,9 +435,8 @@ export class Engine {
             this.ctx.font = 'bold 16px sans-serif';
             this.ctx.textAlign = 'left';
 
-            let title = '';
-            let desc = '';
-            if (option === 'pistol') { title = 'Pistol +1'; desc = 'Increases rate and damage'; }
+            let title = ''; let desc = '';
+            if (option === 'pistol') { title = 'Pistol +1'; desc = 'Increases speed and damage'; }
             if (option === 'shotgun') { title = 'Shotgun'; desc = 'Fires multi-directional cone'; }
             if (option === 'forcefield') { title = 'Forcefield'; desc = 'Aura damages closest enemies'; }
             if (option === 'heal') { title = 'Medkit'; desc = 'Restores 35 HP instantly'; }
